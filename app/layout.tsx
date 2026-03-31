@@ -3,8 +3,6 @@ import { Inter, Space_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Providers } from "@/components/providers";
 import "./globals.css";
-import Header from "@/components/shared/header";
-import Footer from "@/components/shared/footer";
 
 /**
  * Font Optimization
@@ -56,11 +54,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${spaceMono.variable} font-sans antialiased`}
       >
-        <Providers>
-          <Header />
-          {children}
-          <Footer />
-        </Providers>
+        <Providers>{children}</Providers>
         <Analytics />
       </body>
     </html>

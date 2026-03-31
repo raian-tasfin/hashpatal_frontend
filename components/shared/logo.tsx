@@ -22,3 +22,13 @@ export function Logo({
     </Link>
   );
 }
+
+export function AuthCardLogo() {
+  return (
+    <Logo
+      containerClassName="flex items-center justify-center gap-2 lg:hidden mb-4"
+      iconClassName="h-8 w-8 text-primary"
+      textClassName="text-2xl font-bold"
+    />
+  );
+}
