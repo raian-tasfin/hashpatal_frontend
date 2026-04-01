@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AuthCardHeaderComponent from "@/components/shared/auth-card-header";
 import { useForm } from "react-hook-form";
 import { FormField } from "@/components/shared/form-input";
@@ -30,6 +30,12 @@ export default function LoginPage() {
     },
   });
   const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      router.push(ROUTES.DASHBOARD);
+    }
+  }, []);
   const [serverError, setServerError] = useState<string | null>(null);
 
   /**
@@ -104,9 +110,6 @@ export default function LoginPage() {
                 {serverError}
               </p>
             )}
-
-            {/* Sign in button */}
-            <SubmitButton label="Sign In" />
 
             {/* Sign in button */}
             <SubmitButton label="Sign In" />
