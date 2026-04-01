@@ -59,14 +59,15 @@ const roleCards = [
 export default function DashboardPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-
+  console.log("dashboard render:", { isLoading, user: user?.email });
   useEffect(() => {
     if (!isLoading && !user) {
       router.push("/login");
     }
   }, [user, isLoading, router]);
 
-  if (isLoading || !user) return null;
+  if (isLoading) return null;
+  if (!user) return null;
 
   /*   const visibleCards = roleCards.filter((card) => */
   /*     user.role?.includes(card.role as UserRole), */

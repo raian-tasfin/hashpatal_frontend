@@ -42,13 +42,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const fetchMe = async () => {
+  const fetchMe = async (): Promise<AuthUser | null> => {
     const token = localStorage.getItem("accessToken");
+    console.log("fetchMe token:", token?.slice(0, 20));
     if (!token) {
       setIsLoading(false);
-      return;
+      return null;
     }
-
     try {
       const result = await sdk.query({
         me: {
@@ -61,23 +61,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           },
         },
       });
-
       const u = result.me?.user;
       if (!u) throw new Error("No user returned");
-
-      setUser({
+      const authUser: AuthUser = {
         uuid: u.uuid,
         email: u.email,
         name: u.name,
         birthDate: u.birthDate,
         user_roles: u.user_roles as RoleType[],
-      });
+      };
+      setUser(authUser);
+      console.log("fetchMe done, user set:", u.email);
+      return authUser;
     } catch (err: any) {
       const message =
         err?.errors?.[0]?.message ?? "Session expired. Please log in again.";
       setError(message);
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -90,6 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (accessToken: string, refreshToken: string) => {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
+    setIsLoading(true);
     await fetchMe();
   };
 

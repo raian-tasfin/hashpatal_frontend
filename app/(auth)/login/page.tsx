@@ -11,6 +11,7 @@ import SubmitButton from "@/components/shared/submit-button";
 import AlternateLink from "@/components/shared/alternate-link";
 import { sdk } from "@/lib/client/sdk-client";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 /**
  * Component
@@ -30,40 +31,32 @@ export default function LoginPage() {
     },
   });
   const router = useRouter();
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      router.push(ROUTES.DASHBOARD);
-    }
-  }, []);
+  const { login, isLoading, user } = useAuth();
   const [serverError, setServerError] = useState<string | null>(null);
 
   /**
    * Handlers
    */
   const onSubmit = async (data: { email: string; password: string }) => {
+    setServerError(null);
     try {
       const result = await sdk.mutation({
         user_login: {
-          __args: {
-            data: {
-              email: data.email,
-              password: data.password,
-            },
-          },
+          __args: { data: { email: data.email, password: data.password } },
           accessToken: true,
           refreshToken: true,
         },
       });
-
-      const { accessToken, refreshToken } = result.user_login;
-      console.log({ accessToken, refreshToken });
-
-      // store tokens, then redirect
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem("refreshToken", refreshToken);
+      console.log("1. mutation success", result.user_login);
+      await login(
+        result.user_login.accessToken,
+        result.user_login.refreshToken,
+      );
+      console.log("2. login() done");
       router.push(ROUTES.DASHBOARD);
+      console.log("3. router.push called");
     } catch (error: any) {
+      console.error("4. error", error);
       const message =
         error?.errors?.[0]?.message ?? "Login failed. Please try again.";
       setServerError(message);
@@ -73,6 +66,14 @@ export default function LoginPage() {
   /**
    * Returned Component
    */
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.push(ROUTES.DASHBOARD);
+    }
+  }, [user, isLoading, router]);
+
+  if (isLoading) return null;
+  if (user) return null;
   return (
     <div className="flex w-full lg:w-1/2 items-center justify-center p-8 bg-background">
       <Card className="w-full max-w-md border-0 shadow-lg">
