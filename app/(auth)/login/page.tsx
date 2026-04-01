@@ -1,17 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Eye, EyeOff } from "lucide-react";
-import { AuthCardLogo, Logo } from "@/components/shared/logo";
+import { Card, CardContent } from "@/components/ui/card";
 import { ROUTES } from "@/lib/routes";
 import { useState } from "react";
 import AuthCardHeaderComponent from "@/components/shared/auth-card-header";
@@ -41,11 +30,11 @@ export default function LoginPage() {
     },
   });
   const router = useRouter();
+  const [serverError, setServerError] = useState<string | null>(null);
 
   /**
    * Handlers
    */
-
   const onSubmit = async (data: { email: string; password: string }) => {
     try {
       const result = await sdk.mutation({
@@ -68,8 +57,10 @@ export default function LoginPage() {
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       router.push(ROUTES.DASHBOARD);
-    } catch (error) {
-      console.error("Login failed:", error);
+    } catch (error: any) {
+      const message =
+        error?.errors?.[0]?.message ?? "Login failed. Please try again.";
+      setServerError(message);
     }
   };
 
@@ -106,6 +97,16 @@ export default function LoginPage() {
               {...register("password", { required: true })}
               error={errors.password?.message}
             />
+
+            {/* Server Error */}
+            {serverError && (
+              <p className="text-sm text-destructive text-center">
+                {serverError}
+              </p>
+            )}
+
+            {/* Sign in button */}
+            <SubmitButton label="Sign In" />
 
             {/* Sign in button */}
             <SubmitButton label="Sign In" />

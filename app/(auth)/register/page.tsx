@@ -6,7 +6,10 @@ import { FormField } from "@/components/shared/form-input";
 import { PasswordField } from "@/components/shared/password-field";
 import SubmitButton from "@/components/shared/submit-button";
 import { Card, CardContent } from "@/components/ui/card";
+import { sdk } from "@/lib/client/sdk-client";
 import { ROUTES } from "@/lib/routes";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 /**
@@ -19,6 +22,7 @@ export default function RegisterComponent() {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { isSubmitting, errors },
   } = useForm({
     defaultValues: {
@@ -30,12 +34,39 @@ export default function RegisterComponent() {
       gender: "",
     },
   });
+  const [serverError, setServerError] = useState<string | null>(null);
+  const route = useRouter();
 
   /**
    * Handlers
    */
-  const onSubmit = async (data) => {
-    console.log(data);
+  const onSubmit = async ({
+    email,
+    name,
+    password,
+    confirmPassword,
+    birthDate,
+    gender,
+  }) => {
+    try {
+      await sdk.mutation({
+        user_register: {
+          __args: {
+            data: {
+              email,
+              name,
+              password,
+              birthDate,
+            },
+          },
+        },
+      });
+      route.push(ROUTES.LOGIN);
+    } catch (error: any) {
+      const message =
+        error?.errors?.[0]?.message ?? "Registration failed. Please try again.";
+      setServerError(message);
+    }
   };
 
   /**
@@ -112,9 +143,18 @@ export default function RegisterComponent() {
               placeholder="Confirm your password"
               {...register("confirmPassword", {
                 required: "Please confirm your password",
+                validate: (value) =>
+                  value === watch("password") || "Passwords do not match",
               })}
               error={errors.confirmPassword?.message}
             />
+
+            {/* Server Error */}
+            {serverError && (
+              <p className="text-sm text-destructive text-center">
+                {serverError}
+              </p>
+            )}
 
             {/* Submit */}
             <SubmitButton label="Create Account" />
