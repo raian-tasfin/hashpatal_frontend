@@ -1,0 +1,365 @@
+type TokenPair {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type UserOutput {
+  uuid: String!
+  email: String!
+  birthDate: String!
+  name: String!
+  user_roles: [RoleType!]
+  doctor_profile: DoctorProfileOutput
+}
+
+enum RoleType {
+  ADMIN
+  DOCTOR
+  LAB_NURSE
+  LAB_TECHNICIAN
+  PATIENT
+}
+
+type AppointmentOutput {
+  uuid: String!
+  date: String!
+  shift: ShiftType!
+  startTime: String!
+  endTime: String!
+  status: AppointmentStatusType!
+  patient: PatientOutput
+  complaints: [ComplaintOutput!]
+  diagnosis: [DiagnosisOutput!]
+  prescription_items: [PrescriptionItemOutput!]
+}
+
+enum ShiftType {
+  MORNING
+  EVENING
+}
+
+enum AppointmentStatusType {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  DIDNTSHOW
+}
+
+type AvailableShiftOutput {
+  date: String!
+  shift: ShiftType!
+  status: Boolean!
+  start_time: String!
+  end_time: String!
+}
+
+type AvailableSlotOutput {
+  shift: ShiftType!
+  startTime: String!
+  endTime: String!
+}
+
+type ScheduleOutput {
+  uuid: String!
+  max_booking_days: Int!
+  available_slots(date: String!): [AvailableSlotOutput!]!
+  available_shifts: [AvailableShiftOutput!]!
+}
+
+type MakeAppointmentOutput {
+  date: String!
+  start_time: String!
+}
+
+type MeOutput {
+  user: UserOutput!
+  upcoming_appointments: Int!
+  past_visits: Int!
+  upcoming_appointment_list: [AppointmentOutput!]!
+}
+
+type DoctorProfileOutput {
+  doctor_name: String
+  experience: [DoctorExperienceOutput!]
+  academic_record: [AcademicRecordOutput!]
+  schedule: ScheduleOutput
+}
+
+type DoctorExperienceOutput {
+  startYear: String
+  endYear: String
+  location: String!
+  organization: String!
+  title: String!
+}
+
+type AcademicRecordOutput {
+  degree: String!
+  institute: String!
+  year: String!
+}
+
+type MyDoctorProfileOutput {
+  today_appointment_count: Int!
+  total_patients: Int!
+  completed_consultations: Int!
+  today_appointments: [AppointmentOutput!]!
+}
+
+type DepartmentOutput {
+  uuid: String!
+  name: String!
+  doctors: [UserOutput!]
+}
+
+type PatientOutput {
+  name: String!
+  uuid: String!
+  birthDate: String!
+  age: Int!
+  previous_appointments: [PreviousAppointmentOutput!]
+}
+
+type PreviousAppointmentOutput {
+  uuid: String!
+  date: String!
+}
+
+type ComplaintOutput {
+  uuid: String!
+  name: String!
+}
+
+type MedicationOutput {
+  uuid: String!
+  name: String!
+  generic_name: String!
+  dose_unit: String!
+  food_relation: FoodRelationType!
+}
+
+enum FoodRelationType {
+  BEFORE_EATING
+  AFTER_EATING
+  IRRELEVANT
+}
+
+type DiagnosisOutput {
+  uuid: String!
+  name: String!
+}
+
+type PrescriptionItemOutput {
+  medication_uuid: String!
+  medication_name: String!
+  dose_quantity: Float!
+  frequency: MedicationFrequencyType!
+  duration_value: Int!
+  duration_unit: DurationUnitType!
+}
+
+enum MedicationFrequencyType {
+  ONCE_DAILY
+  TWICE_DAILY
+  THREE_TIMES_DAILY
+  FOUR_TIMES_DAILY
+  EVERY_6_HOURS
+  EVERY_8_HOURS
+}
+
+enum DurationUnitType {
+  DAYS
+  WEEKS
+}
+
+type Query {
+  sayHello: String!
+  me: MeOutput
+  user_find(data: FindUserInput!): UserOutput
+  my_doctor_profile: MyDoctorProfileOutput
+  department_fetch_all: [DepartmentOutput!]
+  department_find(data: FindDepartmentInput!): DepartmentOutput
+  get_my_appointments(data: GetAppointmentsInput): [AppointmentOutput!]!
+  get_appointments(data: GetAppointmentsInput!): [AppointmentOutput!]!
+  get_all_complaints: [ComplaintOutput!]!
+  get_all_diagnosis: [DiagnosisOutput!]!
+  get_all_medication: [MedicationOutput!]!
+}
+
+input FindUserInput {
+  email: String
+  uuid: String
+}
+
+input FindDepartmentInput {
+  uuid: String!
+}
+
+input GetAppointmentsInput {
+  scheduleUuid: String
+  patientUuid: String
+  status: AppointmentStatusType
+  date: String
+}
+
+type Mutation {
+  user_register(data: RegisterInput!): UserOutput!
+  user_login(data: LoginInput!): TokenPair!
+  user_refresh_token(data: RefreshLoginInput!): TokenPair!
+  user_logout(data: LogoutInput!): Boolean!
+  user_sync_roles(data: SyncRolesInput!): Boolean!
+  doctor_sync_profile(data: SyncProfileInput!): Boolean!
+  department_add(data: AddDepartmentInput!): Boolean!
+  schedule_sync(data: ScheduleSyncInput!): Boolean!
+  routine_sync(data: RoutineSyncInput!): Boolean!
+  make_appointment(data: MakeAppointmentInput!): MakeAppointmentOutput
+  set_appointment_status(data: SetAppointmentStatusInput!): Boolean!
+  add_complaint(data: AddComplaintInput!): Boolean!
+  add_appointment_complaint(data: AddAppointmentComplaintInput!): Boolean!
+  add_appointment_diagnosis(data: AddAppointmentDiagnosisInput!): Boolean!
+  add_medication(data: AddMedicationInput!): Boolean!
+  add_prescription_item(data: AddPrescriptionItemInput!): Boolean!
+  complete_consultation(data: CompleteConsultationInput!): Boolean!
+}
+
+input RegisterInput {
+  email: String!
+  name: String!
+  password: String!
+  birthDate: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input RefreshLoginInput {
+  refreshToken: String!
+}
+
+input LogoutInput {
+  refreshToken: String!
+}
+
+input SyncRolesInput {
+  uuid: String!
+  roles: [RoleType!]!
+}
+
+input SyncProfileInput {
+  uuid: String!
+  departmentUuid: String
+  experience: [ExperienceInput!]!
+  academic: [AcademicRecordInput!]!
+}
+
+input ExperienceInput {
+  title: String!
+  organization: String!
+  location: String
+  startYear: String!
+  endYear: String
+}
+
+input AcademicRecordInput {
+  degree: String!
+  institute: String!
+  year: String!
+}
+
+input AddDepartmentInput {
+  name: String!
+}
+
+input ScheduleSyncInput {
+  entityUuid: String!
+  schedulable: SchedulableType!
+  minutes_per_slot: Int!
+  max_booking_days: Int!
+}
+
+enum SchedulableType {
+  DOCTOR
+}
+
+input RoutineSyncInput {
+  entityUuid: String!
+  schedulable: SchedulableType!
+  slots: [RoutineSlotInput!]!
+}
+
+input RoutineSlotInput {
+  shift: ShiftType!
+  startTime: String!
+  endTime: String!
+  weekDay: WeekDayType!
+}
+
+enum WeekDayType {
+  SATURDAY
+  SUNDAY
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+}
+
+input MakeAppointmentInput {
+  scheduleUuid: String!
+  date: String!
+  shift: ShiftType!
+}
+
+input SetAppointmentStatusInput {
+  uuid: String!
+  status: AppointmentStatusType!
+}
+
+input AddComplaintInput {
+  name: String!
+}
+
+input AddAppointmentComplaintInput {
+  appointment_uuid: String!
+  complaint_uuid: String!
+  note: String
+  days: Int
+}
+
+input AddAppointmentDiagnosisInput {
+  appointment_uuid: String!
+  diagnosis_uuid: String!
+}
+
+input AddMedicationInput {
+  name: String!
+  generic_name: String!
+  dose_unit: String!
+  food_relation: FoodRelationType!
+}
+
+input AddPrescriptionItemInput {
+  appointment_uuid: String!
+  medication_uuid: String!
+  dose_quantity: Float!
+  frequency: MedicationFrequencyType!
+  duration_value: Int!
+  duration_unit: DurationUnitType!
+}
+
+input CompleteConsultationInput {
+  appointment_uuid: String!
+  complaint_uuids: [String!]
+  diagnosis_uuids: [String!]
+  prescription_items: [PrescriptionItemDetailInput!]
+}
+
+input PrescriptionItemDetailInput {
+  medication_uuid: String!
+  dose_quantity: Float!
+  frequency: MedicationFrequencyType!
+  duration_value: Int!
+  duration_unit: DurationUnitType!
+}

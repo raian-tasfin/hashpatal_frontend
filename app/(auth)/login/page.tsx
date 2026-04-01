@@ -20,6 +20,8 @@ import { FormField } from "@/components/shared/form-input";
 import { PasswordField } from "@/components/shared/password-field";
 import SubmitButton from "@/components/shared/submit-button";
 import AlternateLink from "@/components/shared/alternate-link";
+import { sdk } from "@/lib/client/sdk-client";
+import { useRouter } from "next/navigation";
 
 /**
  * Component
@@ -38,12 +40,37 @@ export default function LoginPage() {
       password: "",
     },
   });
+  const router = useRouter();
 
   /**
    * Handlers
    */
-  const onSubmit = async (data) => {
-    console.log(data);
+
+  const onSubmit = async (data: { email: string; password: string }) => {
+    try {
+      const result = await sdk.mutation({
+        user_login: {
+          __args: {
+            data: {
+              email: data.email,
+              password: data.password,
+            },
+          },
+          accessToken: true,
+          refreshToken: true,
+        },
+      });
+
+      const { accessToken, refreshToken } = result.user_login;
+      console.log({ accessToken, refreshToken });
+
+      // store tokens, then redirect
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      router.push(ROUTES.DASHBOARD);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   /**
