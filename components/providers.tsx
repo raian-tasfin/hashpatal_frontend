@@ -2,6 +2,7 @@
 
 import { ReactNode } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/lib/auth-context";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -11,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
       enableSystem={true}
       storageKey="theme"
     >
-      {children}
+      <AuthProvider>{children}</AuthProvider>
     </ThemeProvider>
   );
 }

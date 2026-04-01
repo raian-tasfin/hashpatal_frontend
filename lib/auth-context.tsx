@@ -1,153 +1,124 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { sdk } from "@/lib/client/sdk-client";
+import { useRouter } from "next/navigation";
+import { createContext, useContext, useEffect, useState } from "react";
+import { enumRoleType, RoleType } from "./sdk";
 
-export type UserRole = "patient" | "doctor" | "admin" | "lab_nurse" | "lab_technician"
+/**
+ * Types
+ */
 
-export interface User {
-  id: string
-  email: string
-  fullName: string
-  birthDate: string
-  gender: "male" | "female" | "other"
-  role: UserRole
-  specialty?: string
-  department?: string
-  createdAt: string
+export interface AuthUser {
+  uuid: string;
+  email: string;
+  name: string;
+  birthDate: string;
+  user_roles: RoleType[];
 }
 
 interface AuthContextType {
-  user: User | null
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  register: (userData: Omit<User, "id" | "role" | "createdAt"> & { password: string }) => Promise<boolean>
-  logout: () => void
-  updateUserRole: (userId: string, role: UserRole, details?: { specialty?: string; department?: string }) => void
+  user: AuthUser | null;
+  isLoading: boolean;
+  error: string | null;
+  isDoctor: boolean;
+  isPatient: boolean;
+  isAdmin: boolean;
+  login: (accessToken: string, refreshToken: string) => Promise<void>;
+  logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+/**
+ * Context
+ */
+const AuthContext = createContext<AuthContextType | null>(null);
 
-// Mock users database
-const MOCK_USERS: (User & { password: string })[] = [
-  {
-    id: "1",
-    email: "admin@hashpatal.com",
-    password: "admin123",
-    fullName: "System Administrator",
-    birthDate: "1985-01-15",
-    gender: "male",
-    role: "admin",
-    createdAt: "2024-01-01",
-  },
-  {
-    id: "2",
-    email: "doctor@hashpatal.com",
-    password: "doctor123",
-    fullName: "Dr. Sarah Johnson",
-    birthDate: "1980-06-20",
-    gender: "female",
-    role: "doctor",
-    specialty: "Cardiology",
-    department: "Heart & Vascular",
-    createdAt: "2024-01-01",
-  },
-  {
-    id: "3",
-    email: "patient@hashpatal.com",
-    password: "patient123",
-    fullName: "John Smith",
-    birthDate: "1990-03-10",
-    gender: "male",
-    role: "patient",
-    createdAt: "2024-01-01",
-  },
-  {
-    id: "4",
-    email: "nurse@hashpatal.com",
-    password: "nurse123",
-    fullName: "Emily Davis",
-    birthDate: "1992-08-25",
-    gender: "female",
-    role: "lab_nurse",
-    department: "Laboratory",
-    createdAt: "2024-01-01",
-  },
-]
+/**
+ * Provider
+ */
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [users, setUsers] = useState<(User & { password: string })[]>(MOCK_USERS)
+  const fetchMe = async () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const result = await sdk.query({
+        me: {
+          user: {
+            uuid: true,
+            email: true,
+            name: true,
+            birthDate: true,
+            user_roles: true,
+          },
+        },
+      });
+
+      const u = result.me?.user;
+      if (!u) throw new Error("No user returned");
+
+      setUser({
+        uuid: u.uuid,
+        email: u.email,
+        name: u.name,
+        birthDate: u.birthDate,
+        user_roles: u.user_roles as RoleType[],
+      });
+    } catch (err: any) {
+      const message =
+        err?.errors?.[0]?.message ?? "Session expired. Please log in again.";
+      setError(message);
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("hashpatal_user")
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
-    }
-    setIsLoading(false)
-  }, [])
+    fetchMe();
+  }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    const foundUser = users.find((u) => u.email === email && u.password === password)
-    if (foundUser) {
-      const { password: _, ...userWithoutPassword } = foundUser
-      setUser(userWithoutPassword)
-      localStorage.setItem("hashpatal_user", JSON.stringify(userWithoutPassword))
-      return true
-    }
-    return false
-  }
-
-  const register = async (userData: Omit<User, "id" | "role" | "createdAt"> & { password: string }): Promise<boolean> => {
-    const existingUser = users.find((u) => u.email === userData.email)
-    if (existingUser) {
-      return false
-    }
-
-    const newUser: User & { password: string } = {
-      ...userData,
-      id: String(users.length + 1),
-      role: "patient",
-      createdAt: new Date().toISOString().split("T")[0],
-    }
-
-    setUsers((prev) => [...prev, newUser])
-    const { password: _, ...userWithoutPassword } = newUser
-    setUser(userWithoutPassword)
-    localStorage.setItem("hashpatal_user", JSON.stringify(userWithoutPassword))
-    return true
-  }
+  const login = async (accessToken: string, refreshToken: string) => {
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    await fetchMe();
+  };
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("hashpatal_user")
-  }
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    setUser(null);
+    router.push("/login");
+  };
 
-  const updateUserRole = (userId: string, role: UserRole, details?: { specialty?: string; department?: string }) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? { ...u, role, specialty: details?.specialty, department: details?.department }
-          : u
-      )
-    )
-  }
+  const value: AuthContextType = {
+    user,
+    isLoading,
+    error,
+    isDoctor: user?.user_roles?.includes(enumRoleType.DOCTOR) ?? false,
+    isPatient: user?.user_roles?.includes(enumRoleType.PATIENT) ?? false,
+    isAdmin: user?.user_roles?.includes(enumRoleType.ADMIN) ?? false,
+    login,
+    logout,
+  };
 
-  return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, updateUserRole }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/**
+ * Hook
+ */
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
-  }
-  return context
-}
-
-export function getAllUsers(): User[] {
-  return MOCK_USERS.map(({ password: _, ...user }) => user)
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+  return ctx;
 }

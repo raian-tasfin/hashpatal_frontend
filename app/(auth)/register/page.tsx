@@ -8,6 +8,7 @@ import SubmitButton from "@/components/shared/submit-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { sdk } from "@/lib/client/sdk-client";
 import { ROUTES } from "@/lib/routes";
+import { RegisterInput } from "@/lib/sdk";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,10 +45,8 @@ export default function RegisterComponent() {
     email,
     name,
     password,
-    confirmPassword,
     birthDate,
-    gender,
-  }) => {
+  }: RegisterInput) => {
     try {
       await sdk.mutation({
         user_register: {
