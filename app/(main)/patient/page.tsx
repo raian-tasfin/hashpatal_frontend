@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
-/* import { useMe } from "@/hooks/use-me"; */
 import {
   Card,
   CardContent,
@@ -18,17 +17,19 @@ import {
   Clock,
   ArrowRight,
 } from "lucide-react";
+import { useMe } from "@/hooks/use-me";
 
 export default function PatientDashboard() {
   const { user } = useAuth();
-  /*   const { data, isLoading } = useMe(); */
+  const { data, isLoading } = useMe();
+  console.log(JSON.stringify(data));
 
   return (
     <div className="p-6 lg:p-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold lg:text-3xl">
           Welcome back,{" "}
-          {/*           {data?.user?.name?.split(" ")[0] ?? user?.name?.split(" ")[0]}! */}
+          {data?.user?.name?.split(" ")[0] ?? user?.name?.split(" ")[0]}!
         </h1>
         <p className="text-muted-foreground mt-1">
           What would you like to do today?
@@ -63,7 +64,7 @@ export default function PatientDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {/*                   {isLoading ? "—" : (data?.upcoming_appointments ?? 0)} */}
+                  {isLoading ? "—" : (data?.upcoming_appointments ?? 0)}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Upcoming Appointments
@@ -81,7 +82,7 @@ export default function PatientDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-bold">
-                  {/*                   {isLoading ? "—" : (data?.past_visits ?? 0)} */}
+                  {isLoading ? "—" : (data?.past_visits ?? 0)}
                 </p>
                 <p className="text-xs text-muted-foreground">Past Visits</p>
               </div>
@@ -104,51 +105,51 @@ export default function PatientDashboard() {
             </Link>
           </CardHeader>
           <CardContent>
-            {/* {isLoading ? (
-                <div className="text-center py-8 text-muted-foreground">
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
                 Loading...
-                </div>
-                ) : !data?.upcoming_appointment_list?.length ? (
-                <div className="text-center py-8 text-muted-foreground">
+              </div>
+            ) : !data?.upcoming_appointment_list?.length ? (
+              <div className="text-center py-8 text-muted-foreground">
                 <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No upcoming appointments</p>
                 <Link href="/patient/book-appointment">
-                <Button variant="link" className="mt-2">
-                Book an appointment
-                </Button>
+                  <Button variant="link" className="mt-2">
+                    Book an appointment
+                  </Button>
                 </Link>
-                </div>
-                ) : (
-                <div className="space-y-3">
+              </div>
+            ) : (
+              <div className="space-y-3">
                 {data.upcoming_appointment_list
-                .slice(0, 3)
-                .map((appointment: any) => (
-                <div
-                key={appointment.uuid}
-                className="flex items-center gap-4 p-3 rounded-lg bg-muted/50"
-                >
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Stethoscope className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">Consultation</p>
-                <p className="text-sm text-muted-foreground capitalize">
-                {appointment.shift?.toLowerCase()}
-                </p>
-                </div>
-                <div className="text-right">
-                <p className="text-sm font-medium">
-                {appointment.date}
-                </p>
-                <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-                <Clock className="h-3 w-3" />
-                {appointment.startTime}
-                </p>
-                </div>
-                </div>
-                ))}
-                </div>
-                )} */}
+                  .slice(0, 3)
+                  .map((appointment: any) => (
+                    <div
+                      key={appointment.uuid}
+                      className="flex items-center gap-4 p-3 rounded-lg bg-muted/50"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Stethoscope className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">Consultation</p>
+                        <p className="text-sm text-muted-foreground capitalize">
+                          {appointment.shift?.toLowerCase()}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium">
+                          {appointment.date}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+                          <Clock className="h-3 w-3" />
+                          {appointment.startTime}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
