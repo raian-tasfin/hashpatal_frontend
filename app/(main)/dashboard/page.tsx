@@ -11,7 +11,7 @@ import {
   FlaskConical,
   ShieldCheck,
 } from "lucide-react";
-import { enumRoleType } from "@/lib/sdk";
+import { enumRoleType, RoleType } from "@/lib/sdk";
 
 const roleCards = [
   {
@@ -69,45 +69,41 @@ export default function DashboardPage() {
   if (isLoading) return null;
   if (!user) return null;
 
-  /*   const visibleCards = roleCards.filter((card) => */
-  /*     user.role?.includes(card.role as UserRole), */
-  /*   ); */
+  const visibleCards = roleCards.filter((card) =>
+    user.user_roles?.includes(card.role as RoleType),
+  );
 
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 mb-2">
-          <Activity className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold">Hashpatal</span>
-        </div>
         <h1 className="text-3xl font-bold mt-6 mb-1">Welcome, {user.name}</h1>
         <p className="text-muted-foreground mb-8">
           Select a portal to continue
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* {visibleCards.map((card) => {
-              const Icon = card.icon;
-              return (
+          {visibleCards.map((card) => {
+            const Icon = card.icon;
+            return (
               <Card
-              key={card.role}
-              className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
-              onClick={() => router.push(card.route)}
+                key={card.role}
+                className="cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+                onClick={() => router.push(card.route)}
               >
-              <CardContent className="p-6">
-              <div
-              className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 ${card.color}`}
-              >
-              <Icon className="h-6 w-6" />
-              </div>
-              <h2 className="text-lg font-semibold mb-1">{card.label}</h2>
-              <p className="text-sm text-muted-foreground">
-              {card.description}
-              </p>
-              </CardContent>
+                <CardContent className="p-6">
+                  <div
+                    className={`h-12 w-12 rounded-xl flex items-center justify-center mb-4 ${card.color}`}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-lg font-semibold mb-1">{card.label}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {card.description}
+                  </p>
+                </CardContent>
               </Card>
-              );
-              })} */}
+            );
+          })}
         </div>
       </div>
     </div>
