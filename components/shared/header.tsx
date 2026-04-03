@@ -6,10 +6,12 @@ import { Button } from "../ui/button";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/lib/auth-context";
-import { LayoutDashboard } from "lucide-react";
+import { LayoutDashboard, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Header() {
-  const { user, isLoading } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+  const router = useRouter();
 
   return (
     <header className="border-b bg-card">
@@ -29,12 +31,24 @@ export default function Header() {
             </>
           )}
           {!isLoading && user && (
-            <Link href="/dashboard">
-              <Button>
-                <LayoutDashboard className="h-4 w-4 mr-2" />
-                Portals
+            <>
+              <Link href="/dashboard">
+                <Button>
+                  <LayoutDashboard className="h-4 w-4 mr-2" />
+                  Portals
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  logout();
+                  router.push(ROUTES.LOGIN);
+                }}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
-            </Link>
+            </>
           )}
         </nav>
       </div>
