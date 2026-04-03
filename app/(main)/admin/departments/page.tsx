@@ -81,6 +81,50 @@ function useDoctors() {
   return { doctors, isLoading, refetch };
 }
 
+function DoctorDeptAssign({
+  doctor,
+  departments,
+  onAssign,
+  isAssigning,
+}: {
+  doctor: Doctor;
+  departments: Department[];
+  onAssign: (
+    doctorUuid: string,
+    departmentUuid: string | null,
+  ) => Promise<void>;
+  isAssigning: boolean;
+}) {
+  const [selected, setSelected] = useState(doctor.department_uuid ?? "");
+
+  const isDirty = selected !== (doctor.department_uuid ?? "");
+
+  return (
+    <div className="flex gap-2">
+      <select
+        value={selected}
+        onChange={(e) => setSelected(e.target.value)}
+        disabled={isAssigning}
+        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+      >
+        <option value="">No department</option>
+        {departments.map((dept) => (
+          <option key={dept.uuid} value={dept.uuid}>
+            {dept.name}
+          </option>
+        ))}
+      </select>
+      <Button
+        size="sm"
+        disabled={!isDirty || isAssigning}
+        onClick={() => onAssign(doctor.uuid, selected || null)}
+      >
+        <Check className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
 export default function AdminDepartmentsPage() {
   const {
     departments,
@@ -239,24 +283,12 @@ export default function AdminDepartmentsPage() {
                         </span>
                       )}
                     </div>
-                    <select
-                      value={doctor.department_uuid ?? ""}
-                      onChange={(e) =>
-                        handleAssignDepartment(
-                          doctor.uuid,
-                          e.target.value || null,
-                        )
-                      }
-                      disabled={assigningDoctor === doctor.uuid}
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                    >
-                      <option value="">No department</option>
-                      {departments.map((dept) => (
-                        <option key={dept.uuid} value={dept.uuid}>
-                          {dept.name}
-                        </option>
-                      ))}
-                    </select>
+                    <DoctorDeptAssign
+                      doctor={doctor}
+                      departments={departments}
+                      onAssign={handleAssignDepartment}
+                      isAssigning={assigningDoctor === doctor.uuid}
+                    />
                   </div>
                 ))}
               </div>
