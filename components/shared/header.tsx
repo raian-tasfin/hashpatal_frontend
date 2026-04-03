@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { useAuth } from "@/lib/auth-context";
+import { LayoutDashboard } from "lucide-react";
 
 export default function Header() {
   const { user, isLoading } = useAuth();
@@ -26,6 +27,14 @@ export default function Header() {
                 <Button>Get Started</Button>
               </Link>
             </>
+          )}
+          {!isLoading && user && (
+            <Link href="/dashboard">
+              <Button>
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                Portals
+              </Button>
+            </Link>
           )}
         </nav>
       </div>

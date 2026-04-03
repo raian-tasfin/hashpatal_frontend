@@ -175,6 +175,13 @@ export type MedicationFrequencyType = 'ONCE_DAILY' | 'TWICE_DAILY' | 'THREE_TIME
 
 export type DurationUnitType = 'DAYS' | 'WEEKS'
 
+export interface AdminDashboardOutput {
+    count_active_doctors: Scalars['Int']
+    count_scheduled_appointments: Scalars['Int']
+    count_completed_appointments_today: Scalars['Int']
+    __typename: 'AdminDashboardOutput'
+}
+
 export interface Query {
     sayHello: Scalars['String']
     me: (MeOutput | null)
@@ -187,11 +194,12 @@ export interface Query {
     get_all_complaints: ComplaintOutput[]
     get_all_diagnosis: DiagnosisOutput[]
     get_all_medication: MedicationOutput[]
+    admin_dashboard: AdminDashboardOutput
     __typename: 'Query'
 }
 
 export interface Mutation {
-    user_register: UserOutput
+    user_register: Scalars['Boolean']
     user_login: TokenPair
     user_refresh_token: TokenPair
     user_logout: Scalars['Boolean']
@@ -387,6 +395,14 @@ export interface PrescriptionItemOutputGenqlSelection{
     __scalar?: boolean | number
 }
 
+export interface AdminDashboardOutputGenqlSelection{
+    count_active_doctors?: boolean | number
+    count_scheduled_appointments?: boolean | number
+    count_completed_appointments_today?: boolean | number
+    __typename?: boolean | number
+    __scalar?: boolean | number
+}
+
 export interface QueryGenqlSelection{
     sayHello?: boolean | number
     me?: MeOutputGenqlSelection
@@ -399,6 +415,7 @@ export interface QueryGenqlSelection{
     get_all_complaints?: ComplaintOutputGenqlSelection
     get_all_diagnosis?: DiagnosisOutputGenqlSelection
     get_all_medication?: MedicationOutputGenqlSelection
+    admin_dashboard?: AdminDashboardOutputGenqlSelection
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -410,7 +427,7 @@ export interface FindDepartmentInput {uuid: Scalars['String']}
 export interface GetAppointmentsInput {scheduleUuid?: (Scalars['String'] | null),patientUuid?: (Scalars['String'] | null),status?: (AppointmentStatusType | null),date?: (Scalars['String'] | null)}
 
 export interface MutationGenqlSelection{
-    user_register?: (UserOutputGenqlSelection & { __args: {data: RegisterInput} })
+    user_register?: { __args: {data: RegisterInput} }
     user_login?: (TokenPairGenqlSelection & { __args: {data: LoginInput} })
     user_refresh_token?: (TokenPairGenqlSelection & { __args: {data: RefreshLoginInput} })
     user_logout?: { __args: {data: LogoutInput} }
@@ -622,6 +639,14 @@ export interface PrescriptionItemDetailInput {medication_uuid: Scalars['String']
     export const isPrescriptionItemOutput = (obj?: { __typename?: any } | null): obj is PrescriptionItemOutput => {
       if (!obj?.__typename) throw new Error('__typename is missing in "isPrescriptionItemOutput"')
       return PrescriptionItemOutput_possibleTypes.includes(obj.__typename)
+    }
+    
+
+
+    const AdminDashboardOutput_possibleTypes: string[] = ['AdminDashboardOutput']
+    export const isAdminDashboardOutput = (obj?: { __typename?: any } | null): obj is AdminDashboardOutput => {
+      if (!obj?.__typename) throw new Error('__typename is missing in "isAdminDashboardOutput"')
+      return AdminDashboardOutput_possibleTypes.includes(obj.__typename)
     }
     
 

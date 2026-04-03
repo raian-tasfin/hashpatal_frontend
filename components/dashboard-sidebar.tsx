@@ -31,17 +31,16 @@ const navItems: Record<enumRoleType, NavItem[]> = {
     { label: "Dashboard", href: "/patient", icon: LayoutDashboard },
     { label: "My Appointments", href: "/patient/appointments", icon: Calendar },
     { label: "Medical Records", href: "/patient/records", icon: FileText },
-    { label: "Lab Results", href: "/patient/lab-results", icon: TestTube },
   ],
   DOCTOR: [
     { label: "Dashboard", href: "/doctor", icon: LayoutDashboard },
-    { label: "My Patients", href: "/doctor/patients", icon: Users },
     { label: "Appointments", href: "/doctor/appointments", icon: Calendar },
-    {
-      label: "Consultations",
-      href: "/doctor/consultations",
-      icon: Stethoscope,
-    },
+    /* {
+     *   label: "Consultations",
+     *   href: "/doctor/consultations",
+     *   icon: Stethoscope,
+     * } */
+    ,
   ],
   ADMIN: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },

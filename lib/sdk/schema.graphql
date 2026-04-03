@@ -172,6 +172,12 @@ enum DurationUnitType {
   WEEKS
 }
 
+type AdminDashboardOutput {
+  count_active_doctors: Int!
+  count_scheduled_appointments: Int!
+  count_completed_appointments_today: Int!
+}
+
 type Query {
   sayHello: String!
   me: MeOutput
@@ -184,6 +190,7 @@ type Query {
   get_all_complaints: [ComplaintOutput!]!
   get_all_diagnosis: [DiagnosisOutput!]!
   get_all_medication: [MedicationOutput!]!
+  admin_dashboard: AdminDashboardOutput!
 }
 
 input FindUserInput {
@@ -203,7 +210,7 @@ input GetAppointmentsInput {
 }
 
 type Mutation {
-  user_register(data: RegisterInput!): UserOutput!
+  user_register(data: RegisterInput!): Boolean!
   user_login(data: LoginInput!): TokenPair!
   user_refresh_token(data: RefreshLoginInput!): TokenPair!
   user_logout(data: LogoutInput!): Boolean!
