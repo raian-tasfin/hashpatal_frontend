@@ -10,8 +10,8 @@ export default {
         26,
         27,
         28,
-        45,
-        48
+        47,
+        50
     ],
     "types": {
         "TokenPair": {
@@ -370,6 +370,43 @@ export default {
                 1
             ]
         },
+        "UserListItemOutput": {
+            "uuid": [
+                1
+            ],
+            "name": [
+                1
+            ],
+            "email": [
+                1
+            ],
+            "roles": [
+                3
+            ],
+            "__typename": [
+                1
+            ]
+        },
+        "DoctorListItemOutput": {
+            "uuid": [
+                1
+            ],
+            "name": [
+                1
+            ],
+            "email": [
+                1
+            ],
+            "department_uuid": [
+                1
+            ],
+            "department_name": [
+                1
+            ],
+            "__typename": [
+                1
+            ]
+        },
         "Query": {
             "sayHello": [
                 1
@@ -381,7 +418,7 @@ export default {
                 2,
                 {
                     "data": [
-                        31,
+                        33,
                         "FindUserInput!"
                     ]
                 }
@@ -396,7 +433,7 @@ export default {
                 18,
                 {
                     "data": [
-                        32,
+                        34,
                         "FindDepartmentInput!"
                     ]
                 }
@@ -405,7 +442,7 @@ export default {
                 4,
                 {
                     "data": [
-                        33
+                        35
                     ]
                 }
             ],
@@ -413,7 +450,7 @@ export default {
                 4,
                 {
                     "data": [
-                        33,
+                        35,
                         "GetAppointmentsInput!"
                     ]
                 }
@@ -429,6 +466,12 @@ export default {
             ],
             "admin_dashboard": [
                 29
+            ],
+            "admin_get_all_users": [
+                30
+            ],
+            "admin_get_all_doctors": [
+                31
             ],
             "__typename": [
                 1
@@ -475,7 +518,7 @@ export default {
                 8,
                 {
                     "data": [
-                        35,
+                        37,
                         "RegisterInput!"
                     ]
                 }
@@ -484,7 +527,7 @@ export default {
                 0,
                 {
                     "data": [
-                        36,
+                        38,
                         "LoginInput!"
                     ]
                 }
@@ -493,7 +536,7 @@ export default {
                 0,
                 {
                     "data": [
-                        37,
+                        39,
                         "RefreshLoginInput!"
                     ]
                 }
@@ -502,7 +545,7 @@ export default {
                 8,
                 {
                     "data": [
-                        38,
+                        40,
                         "LogoutInput!"
                     ]
                 }
@@ -511,7 +554,7 @@ export default {
                 8,
                 {
                     "data": [
-                        39,
+                        41,
                         "SyncRolesInput!"
                     ]
                 }
@@ -520,7 +563,7 @@ export default {
                 8,
                 {
                     "data": [
-                        40,
+                        42,
                         "SyncProfileInput!"
                     ]
                 }
@@ -529,7 +572,7 @@ export default {
                 8,
                 {
                     "data": [
-                        43,
+                        45,
                         "AddDepartmentInput!"
                     ]
                 }
@@ -538,7 +581,7 @@ export default {
                 8,
                 {
                     "data": [
-                        44,
+                        46,
                         "ScheduleSyncInput!"
                     ]
                 }
@@ -547,7 +590,7 @@ export default {
                 8,
                 {
                     "data": [
-                        46,
+                        48,
                         "RoutineSyncInput!"
                     ]
                 }
@@ -556,7 +599,7 @@ export default {
                 12,
                 {
                     "data": [
-                        49,
+                        51,
                         "MakeAppointmentInput!"
                     ]
                 }
@@ -565,7 +608,7 @@ export default {
                 8,
                 {
                     "data": [
-                        50,
+                        52,
                         "SetAppointmentStatusInput!"
                     ]
                 }
@@ -574,7 +617,7 @@ export default {
                 8,
                 {
                     "data": [
-                        51,
+                        53,
                         "AddComplaintInput!"
                     ]
                 }
@@ -583,7 +626,7 @@ export default {
                 8,
                 {
                     "data": [
-                        52,
+                        54,
                         "AddAppointmentComplaintInput!"
                     ]
                 }
@@ -592,7 +635,7 @@ export default {
                 8,
                 {
                     "data": [
-                        53,
+                        55,
                         "AddAppointmentDiagnosisInput!"
                     ]
                 }
@@ -601,7 +644,7 @@ export default {
                 8,
                 {
                     "data": [
-                        54,
+                        56,
                         "AddMedicationInput!"
                     ]
                 }
@@ -610,7 +653,7 @@ export default {
                 8,
                 {
                     "data": [
-                        55,
+                        57,
                         "AddPrescriptionItemInput!"
                     ]
                 }
@@ -619,8 +662,20 @@ export default {
                 8,
                 {
                     "data": [
-                        56,
+                        58,
                         "CompleteConsultationInput!"
+                    ]
+                }
+            ],
+            "admin_assign_doctor_department": [
+                8,
+                {
+                    "doctorUuid": [
+                        1,
+                        "String!"
+                    ],
+                    "departmentUuid": [
+                        1
                     ]
                 }
             ],
@@ -691,10 +746,10 @@ export default {
                 1
             ],
             "experience": [
-                41
+                43
             ],
             "academic": [
-                42
+                44
             ],
             "__typename": [
                 1
@@ -747,7 +802,7 @@ export default {
                 1
             ],
             "schedulable": [
-                45
+                47
             ],
             "minutes_per_slot": [
                 11
@@ -765,10 +820,10 @@ export default {
                 1
             ],
             "schedulable": [
-                45
+                47
             ],
             "slots": [
-                47
+                49
             ],
             "__typename": [
                 1
@@ -785,7 +840,7 @@ export default {
                 1
             ],
             "weekDay": [
-                48
+                50
             ],
             "__typename": [
                 1
@@ -904,7 +959,7 @@ export default {
                 1
             ],
             "prescription_items": [
-                57
+                59
             ],
             "__typename": [
                 1

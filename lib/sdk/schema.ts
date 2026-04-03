@@ -182,6 +182,23 @@ export interface AdminDashboardOutput {
     __typename: 'AdminDashboardOutput'
 }
 
+export interface UserListItemOutput {
+    uuid: Scalars['String']
+    name: Scalars['String']
+    email: Scalars['String']
+    roles: RoleType[]
+    __typename: 'UserListItemOutput'
+}
+
+export interface DoctorListItemOutput {
+    uuid: Scalars['String']
+    name: Scalars['String']
+    email: Scalars['String']
+    department_uuid: (Scalars['String'] | null)
+    department_name: (Scalars['String'] | null)
+    __typename: 'DoctorListItemOutput'
+}
+
 export interface Query {
     sayHello: Scalars['String']
     me: (MeOutput | null)
@@ -195,6 +212,8 @@ export interface Query {
     get_all_diagnosis: DiagnosisOutput[]
     get_all_medication: MedicationOutput[]
     admin_dashboard: AdminDashboardOutput
+    admin_get_all_users: UserListItemOutput[]
+    admin_get_all_doctors: DoctorListItemOutput[]
     __typename: 'Query'
 }
 
@@ -216,6 +235,7 @@ export interface Mutation {
     add_medication: Scalars['Boolean']
     add_prescription_item: Scalars['Boolean']
     complete_consultation: Scalars['Boolean']
+    admin_assign_doctor_department: Scalars['Boolean']
     __typename: 'Mutation'
 }
 
@@ -403,6 +423,25 @@ export interface AdminDashboardOutputGenqlSelection{
     __scalar?: boolean | number
 }
 
+export interface UserListItemOutputGenqlSelection{
+    uuid?: boolean | number
+    name?: boolean | number
+    email?: boolean | number
+    roles?: boolean | number
+    __typename?: boolean | number
+    __scalar?: boolean | number
+}
+
+export interface DoctorListItemOutputGenqlSelection{
+    uuid?: boolean | number
+    name?: boolean | number
+    email?: boolean | number
+    department_uuid?: boolean | number
+    department_name?: boolean | number
+    __typename?: boolean | number
+    __scalar?: boolean | number
+}
+
 export interface QueryGenqlSelection{
     sayHello?: boolean | number
     me?: MeOutputGenqlSelection
@@ -416,6 +455,8 @@ export interface QueryGenqlSelection{
     get_all_diagnosis?: DiagnosisOutputGenqlSelection
     get_all_medication?: MedicationOutputGenqlSelection
     admin_dashboard?: AdminDashboardOutputGenqlSelection
+    admin_get_all_users?: UserListItemOutputGenqlSelection
+    admin_get_all_doctors?: DoctorListItemOutputGenqlSelection
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -444,6 +485,7 @@ export interface MutationGenqlSelection{
     add_medication?: { __args: {data: AddMedicationInput} }
     add_prescription_item?: { __args: {data: AddPrescriptionItemInput} }
     complete_consultation?: { __args: {data: CompleteConsultationInput} }
+    admin_assign_doctor_department?: { __args: {doctorUuid: Scalars['String'], departmentUuid?: (Scalars['String'] | null)} }
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -647,6 +689,22 @@ export interface PrescriptionItemDetailInput {medication_uuid: Scalars['String']
     export const isAdminDashboardOutput = (obj?: { __typename?: any } | null): obj is AdminDashboardOutput => {
       if (!obj?.__typename) throw new Error('__typename is missing in "isAdminDashboardOutput"')
       return AdminDashboardOutput_possibleTypes.includes(obj.__typename)
+    }
+    
+
+
+    const UserListItemOutput_possibleTypes: string[] = ['UserListItemOutput']
+    export const isUserListItemOutput = (obj?: { __typename?: any } | null): obj is UserListItemOutput => {
+      if (!obj?.__typename) throw new Error('__typename is missing in "isUserListItemOutput"')
+      return UserListItemOutput_possibleTypes.includes(obj.__typename)
+    }
+    
+
+
+    const DoctorListItemOutput_possibleTypes: string[] = ['DoctorListItemOutput']
+    export const isDoctorListItemOutput = (obj?: { __typename?: any } | null): obj is DoctorListItemOutput => {
+      if (!obj?.__typename) throw new Error('__typename is missing in "isDoctorListItemOutput"')
+      return DoctorListItemOutput_possibleTypes.includes(obj.__typename)
     }
     
 

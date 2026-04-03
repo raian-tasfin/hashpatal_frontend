@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useAuth, type UserRole } from "@/lib/auth-context";
+import { useEffect, useState } from "react";
+import { sdk } from "@/lib/client/sdk-client";
+import { ACCESS_TOKEN_KEY } from "@/lib/constants";
+import { enumRoleType, RoleType } from "@/lib/sdk";
 import {
   Card,
   CardContent,
@@ -23,161 +25,118 @@ import {
   Users,
 } from "lucide-react";
 
-// Mock users for demo
-const MOCK_ALL_USERS = [
-  {
-    id: "1",
-    email: "admin@hashpatal.com",
-    fullName: "System Administrator",
-    role: "admin" as UserRole,
-    department: "Administration",
-  },
-  {
-    id: "2",
-    email: "doctor@hashpatal.com",
-    fullName: "Dr. Sarah Johnson",
-    role: "doctor" as UserRole,
-    specialty: "Cardiology",
-    department: "Heart & Vascular",
-  },
-  {
-    id: "3",
-    email: "patient@hashpatal.com",
-    fullName: "John Smith",
-    role: "patient" as UserRole,
-  },
-  {
-    id: "4",
-    email: "nurse@hashpatal.com",
-    fullName: "Emily Davis",
-    role: "lab_nurse" as UserRole,
-    department: "Laboratory",
-  },
-  {
-    id: "5",
-    email: "tech@hashpatal.com",
-    fullName: "Mike Wilson",
-    role: "lab_technician" as UserRole,
-    department: "Laboratory",
-  },
-  {
-    id: "6",
-    email: "newuser@example.com",
-    fullName: "Jane Doe",
-    role: "patient" as UserRole,
-  },
+interface UserListItem {
+  uuid: string;
+  name: string;
+  email: string;
+  roles: RoleType[];
+}
+
+function useAllUsers() {
+  const [users, setUsers] = useState<UserListItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const refetch = async () => {
+    try {
+      const token = localStorage.getItem(ACCESS_TOKEN_KEY);
+      if (!token) return;
+      const result = await sdk.query({
+        admin_get_all_users: {
+          uuid: true,
+          name: true,
+          email: true,
+          roles: true,
+        },
+      });
+      setUsers((result.admin_get_all_users as UserListItem[]) ?? []);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  return { users, isLoading, refetch };
+}
+
+const ROLE_OPTIONS: { value: RoleType; label: string }[] = [
+  { value: enumRoleType.PATIENT, label: "Patient" },
+  { value: enumRoleType.DOCTOR, label: "Doctor" },
+  { value: enumRoleType.ADMIN, label: "Administrator" },
+  { value: enumRoleType.LAB_NURSE, label: "Lab Nurse" },
+  { value: enumRoleType.LAB_TECHNICIAN, label: "Lab Technician" },
 ];
 
-const SPECIALTIES = [
-  "Cardiology",
-  "Neurology",
-  "Dermatology",
-  "Orthopedics",
-  "General Medicine",
-  "Pediatrics",
-  "Oncology",
-  "Psychiatry",
-];
+const getRoleIcon = (roles: RoleType[]) => {
+  if (roles.includes(enumRoleType.ADMIN)) return Shield;
+  if (roles.includes(enumRoleType.DOCTOR)) return Stethoscope;
+  if (
+    roles.includes(enumRoleType.LAB_NURSE) ||
+    roles.includes(enumRoleType.LAB_TECHNICIAN)
+  )
+    return TestTube;
+  return User;
+};
 
-const DEPARTMENTS = [
-  "Heart & Vascular",
-  "Neurosciences",
-  "Skin Care",
-  "Bone & Joint",
-  "Internal Medicine",
-  "Children's Health",
-  "Cancer Center",
-  "Mental Health",
-  "Laboratory",
-  "Emergency",
-];
+const getRoleLabel = (roles: RoleType[]) =>
+  ROLE_OPTIONS.filter((o) => roles.includes(o.value))
+    .map((o) => o.label)
+    .join(", ") || "No Role";
 
 export default function AdminUsersPage() {
-  const { updateUserRole } = useAuth();
-  const [users, setUsers] = useState(MOCK_ALL_USERS);
+  const { users, isLoading, refetch } = useAllUsers();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedUser, setSelectedUser] = useState<
-    (typeof MOCK_ALL_USERS)[0] | null
-  >(null);
-  const [newRole, setNewRole] = useState<UserRole>("patient");
-  const [specialty, setSpecialty] = useState("");
-  const [department, setDepartment] = useState("");
+  const [selectedUser, setSelectedUser] = useState<UserListItem | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<RoleType[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const filteredUsers = users.filter(
     (user) =>
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const getRoleIcon = (role: UserRole) => {
-    switch (role) {
-      case "admin":
-        return Shield;
-      case "doctor":
-        return Stethoscope;
-      case "lab_nurse":
-      case "lab_technician":
-        return TestTube;
-      default:
-        return User;
-    }
-  };
-
-  const getRoleLabel = (role: UserRole) => {
-    const labels: Record<UserRole, string> = {
-      patient: "Patient",
-      doctor: "Doctor",
-      admin: "Administrator",
-      lab_nurse: "Lab Nurse",
-      lab_technician: "Lab Technician",
-    };
-    return labels[role];
-  };
-
-  const handleSelectUser = (user: (typeof MOCK_ALL_USERS)[0]) => {
+  const handleSelectUser = (user: UserListItem) => {
     setSelectedUser(user);
-    setNewRole(user.role);
-    setSpecialty(user.specialty || "");
-    setDepartment(user.department || "");
+    setSelectedRoles(user.roles);
     setIsSuccess(false);
   };
 
-  const handleAssignRole = () => {
-    if (!selectedUser) return;
-
-    // Validate doctor role requires specialty
-    if (newRole === "doctor" && !specialty) {
-      return;
-    }
-
-    // Update local state
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === selectedUser.id
-          ? {
-              ...u,
-              role: newRole,
-              specialty: newRole === "doctor" ? specialty : undefined,
-              department: department || undefined,
-            }
-          : u,
-      ),
+  const toggleRole = (role: RoleType) => {
+    setSelectedRoles((prev) =>
+      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role],
     );
+  };
 
-    // Update auth context
-    updateUserRole(selectedUser.id, newRole, { specialty, department });
-
-    setIsSuccess(true);
-    setTimeout(() => {
-      setSelectedUser(null);
-      setIsSuccess(false);
-    }, 2000);
+  const handleAssignRoles = async () => {
+    if (!selectedUser) return;
+    setIsSubmitting(true);
+    try {
+      await sdk.mutation({
+        user_sync_roles: {
+          __args: { data: { uuid: selectedUser.uuid, roles: selectedRoles } },
+        },
+      });
+      await refetch();
+      setIsSuccess(true);
+      setTimeout(() => {
+        setSelectedUser(null);
+        setIsSuccess(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to assign roles:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="p-6 lg:p-8">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold lg:text-3xl">User Management</h1>
         <p className="text-muted-foreground mt-1">
@@ -199,7 +158,11 @@ export default function AdminUsersPage() {
           </div>
 
           <div className="space-y-2 max-h-[600px] overflow-y-auto">
-            {filteredUsers.length === 0 ? (
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading...
+              </div>
+            ) : filteredUsers.length === 0 ? (
               <Card>
                 <CardContent className="py-8 text-center">
                   <Users className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
@@ -208,12 +171,12 @@ export default function AdminUsersPage() {
               </Card>
             ) : (
               filteredUsers.map((user) => {
-                const RoleIcon = getRoleIcon(user.role);
+                const RoleIcon = getRoleIcon(user.roles);
                 return (
                   <Card
-                    key={user.id}
+                    key={user.uuid}
                     className={`cursor-pointer transition-all hover:border-primary/50 ${
-                      selectedUser?.id === user.id
+                      selectedUser?.uuid === user.uuid
                         ? "border-primary bg-primary/5"
                         : ""
                     }`}
@@ -224,13 +187,13 @@ export default function AdminUsersPage() {
                         <RoleIcon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{user.fullName}</p>
+                        <p className="font-medium truncate">{user.name}</p>
                         <p className="text-sm text-muted-foreground truncate">
                           {user.email}
                         </p>
                       </div>
                       <span className="px-2 py-1 text-xs rounded-full bg-muted text-muted-foreground shrink-0">
-                        {getRoleLabel(user.role)}
+                        {getRoleLabel(user.roles)}
                       </span>
                     </CardContent>
                   </Card>
@@ -248,8 +211,8 @@ export default function AdminUsersPage() {
                 <UserCog className="h-16 w-16 text-muted-foreground opacity-50 mb-4" />
                 <h3 className="text-lg font-medium mb-2">Select a User</h3>
                 <p className="text-muted-foreground max-w-sm">
-                  Choose a user from the list to view their details and assign a
-                  role
+                  Choose a user from the list to view their details and assign
+                  roles
                 </p>
               </CardContent>
             </Card>
@@ -259,10 +222,10 @@ export default function AdminUsersPage() {
                 <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <Check className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-lg font-medium mb-2">Role Updated!</h3>
+                <h3 className="text-lg font-medium mb-2">Roles Updated!</h3>
                 <p className="text-muted-foreground">
-                  {selectedUser.fullName}&apos;s role has been updated to{" "}
-                  {getRoleLabel(newRole)}.
+                  {selectedUser.name}&apos;s roles have been updated
+                  successfully.
                 </p>
               </CardContent>
             </Card>
@@ -275,7 +238,7 @@ export default function AdminUsersPage() {
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle>{selectedUser.fullName}</CardTitle>
+                      <CardTitle>{selectedUser.name}</CardTitle>
                       <CardDescription>{selectedUser.email}</CardDescription>
                     </div>
                   </div>
@@ -291,90 +254,56 @@ export default function AdminUsersPage() {
               <CardContent className="space-y-6">
                 <div className="p-4 rounded-lg bg-muted/50">
                   <p className="text-sm text-muted-foreground mb-1">
-                    Current Role
+                    Current Roles
                   </p>
                   <p className="font-medium">
-                    {getRoleLabel(selectedUser.role)}
+                    {getRoleLabel(selectedUser.roles)}
                   </p>
-                  {selectedUser.specialty && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Specialty: {selectedUser.specialty}
-                    </p>
-                  )}
-                  {selectedUser.department && (
-                    <p className="text-sm text-muted-foreground">
-                      Department: {selectedUser.department}
-                    </p>
-                  )}
                 </div>
 
-                <div className="space-y-4">
-                  <h3 className="font-semibold">Assign New Role</h3>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Role</label>
-                    <select
-                      value={newRole}
-                      onChange={(e) => setNewRole(e.target.value as UserRole)}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <option value="patient">Patient</option>
-                      <option value="doctor">Doctor</option>
-                      <option value="admin">Administrator</option>
-                      <option value="lab_nurse">Lab Nurse</option>
-                      <option value="lab_technician">Lab Technician</option>
-                    </select>
+                <div className="space-y-3">
+                  <h3 className="font-semibold">Assign Roles</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {ROLE_OPTIONS.map((option) => {
+                      const isSelected = selectedRoles.includes(option.value);
+                      return (
+                        <button
+                          key={option.value}
+                          onClick={() => toggleRole(option.value)}
+                          className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                            isSelected
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-input hover:border-primary/50"
+                          }`}
+                        >
+                          <div
+                            className={`h-5 w-5 rounded flex items-center justify-center border ${
+                              isSelected
+                                ? "bg-primary border-primary"
+                                : "border-input"
+                            }`}
+                          >
+                            {isSelected && (
+                              <Check className="h-3 w-3 text-primary-foreground" />
+                            )}
+                          </div>
+                          <span className="text-sm font-medium">
+                            {option.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-
-                  {newRole === "doctor" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">
-                        Specialty <span className="text-destructive">*</span>
-                      </label>
-                      <select
-                        value={specialty}
-                        onChange={(e) => setSpecialty(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <option value="">Select specialty</option>
-                        {SPECIALTIES.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  {(newRole === "doctor" ||
-                    newRole === "lab_nurse" ||
-                    newRole === "lab_technician") && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Department</label>
-                      <select
-                        value={department}
-                        onChange={(e) => setDepartment(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                      >
-                        <option value="">Select department</option>
-                        {DEPARTMENTS.map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex gap-3 pt-4">
                   <Button
-                    onClick={handleAssignRole}
+                    onClick={handleAssignRoles}
                     className="flex-1"
-                    disabled={newRole === "doctor" && !specialty}
+                    disabled={isSubmitting || selectedRoles.length === 0}
                   >
                     <Check className="h-4 w-4 mr-2" />
-                    Assign Role
+                    {isSubmitting ? "Saving..." : "Save Roles"}
                   </Button>
                   <Button
                     variant="outline"

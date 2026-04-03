@@ -17,6 +17,7 @@ import {
   UserCog,
   ClipboardList,
   Activity,
+  Building2,
 } from "lucide-react";
 import { RoleType as enumRoleType, RoleType } from "@/lib/sdk";
 
@@ -45,8 +46,7 @@ const navItems: Record<enumRoleType, NavItem[]> = {
   ADMIN: [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
     { label: "User Management", href: "/admin/users", icon: UserCog },
-    { label: "Staff", href: "/admin/staff", icon: Users },
-    { label: "Reports", href: "/admin/reports", icon: ClipboardList },
+    { label: "Departments", href: "/admin/departments", icon: Building2 },
   ],
   LAB_NURSE: [
     { label: "Dashboard", href: "/lab", icon: LayoutDashboard },
